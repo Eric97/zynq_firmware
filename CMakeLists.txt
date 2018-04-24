@@ -45,6 +45,7 @@ set(REGADO_SRC
 	src/ransac/matrix.cpp
 	src/ransac/pose_compute.cpp
 	src/dlg/task_dlg.cpp
+	src/camera/task_camera.cpp
 )
 
 add_executable(${PROJECT_NAME} ${REGADO_SRC})

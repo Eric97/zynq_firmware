@@ -22,6 +22,7 @@ extern unsigned long int tic();
 
 // 10 Hz if iteration 100 times
 #define INTERVAL_MAIN		100000	// 100 ms
+#define INTERVAL_CAM		5000	// 5 ms, currently task_cam only configure and once
 #define INTERVAL_RANSAC		70000	// 70 ms
 #define INTERVAL_DDR		5000	// 5 ms
 #define INVERVAL_DLG		5000	// 5 ms
