@@ -10,6 +10,7 @@
 
 #include "task_ransac.h"
 #include "../comm_fpga/task_readDDR.h"
+#include "matrix.h"
 
 extern unsigned int tic();
 extern TaskReadDDR	_task_readddr;
@@ -18,7 +19,7 @@ TaskRansac::TaskRansac() :
 	_p_pose_compute(nullptr),
 	_p_match_file(nullptr)
 {
-
+	_pose = Matrix::eye(4);
 }
 
 bool TaskRansac::init_task()
@@ -91,9 +92,18 @@ void TaskRansac::task_loop1()
 //	print_feature_points();
 	std::cout << _p_matched.at(175).u1p << " " << _p_matched.at(175).v1p << std::endl;
 
-	std::vector<double> rt_delta = _p_pose_compute->estimationMotion(_p_matched);
-	for (int i = 0; i < 6; i++) {
-		std::cout << rt_delta[i] << std::endl;
+	if ( _p_pose_compute->estimationMotion(_p_matched) ) {
+		// On success, update current pose
+		_pose = _pose * Matrix::inv(_p_pose_compute->getMotion());
+		std::cout << "Current frame pose " << std::endl;
+//		std::cout << _pose.val[0][0] << std::endl;
+		printf("%.3f %.3f %.3f %.3f\n", _pose.val[0][0], _pose.val[0][1], _pose.val[0][2], _pose.val[0][3]);
+		printf("%.3f %.3f %.3f %.3f\n", _pose.val[1][0], _pose.val[1][1], _pose.val[1][2], _pose.val[1][3]);
+		printf("%.3f %.3f %.3f %.3f\n", _pose.val[2][0], _pose.val[2][1], _pose.val[2][2], _pose.val[2][3]);
+		printf("%.3f %.3f %.3f %.3f\n", _pose.val[3][0], _pose.val[3][1], _pose.val[3][2], _pose.val[3][3]);
+		printf("\n");
+	} else {
+		printf("Motion estimation failed...\n");
 	}
 
 	// Reset feature_ddr and wait idle until next valid feature points data

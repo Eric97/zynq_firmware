@@ -3,6 +3,7 @@
 #include <vector>
 #include "p_match.h"
 #include <stdint.h>
+#include "matrix.h"
 
 enum Result { UPDATED, FAILED, CONVERGED };
 
@@ -37,7 +38,9 @@ class PoseCompute
 public:
 	Parameters param;
 	PoseCompute(Parameters _param);
-	std::vector<double> estimationMotion(std::vector<p_match> p_matched);
+	bool estimationMotion(std::vector<p_match> p_matched);
+
+	Matrix getMotion() const { return _rt_delta; }
 
 private:
 	Result updateParameters(std::vector<p_match> &p_matched, std::vector<int32_t> &active,
@@ -45,8 +48,12 @@ private:
 	void computeObservations(std::vector<p_match> &p_matched, std::vector<int32_t> &active);
 	void computeResidualsAndJacobian(std::vector<double> &tr, std::vector<int32_t> &active);
 
+	Matrix transformationVectorToMatrix (std::vector<double> tr);
 	std::vector<int32_t> getInlier(std::vector<p_match> &p_matched, std::vector<double> &tr);
 	std::vector<int32_t> inliers;    // inlier set
+
+	Matrix _rt_delta;	/**< Transformation from previous frame to current frame */
+	bool _rt_valid; 	/**< Flag to indicate validity of R|T */
 
 	double *X;  //��һʱ�̵���������ά���� X Y Z
 	double *Y;

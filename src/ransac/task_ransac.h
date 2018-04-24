@@ -27,6 +27,8 @@ private:
 	FILE *_p_match_file;			/**< file pointer to matching points file */
 
 public:
+	Matrix _pose;	/**< Camera pose */
+
 	/**
 	 * @brief Task thread initialization
 	 *
@@ -52,6 +54,8 @@ public:
 	 * @brief Print out all feature points in the vector
 	 */
 	void print_feature_points();
+
+	Matrix get_pose() const { return _pose; }
 };
 
 #endif /* TASK_RANSAC_H_ */

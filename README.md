@@ -11,7 +11,7 @@ These instructions will get you a copy of the project up and running on your loc
 Install and Xilinx SDK and set the toolchain path
 
 ```
-export XILINX_TOOLCHAIN_DIR="~/Xilinx/SDK/2016.4/gnu/arm/lin/binâ€
+export XILINX_TOOLCHAIN_DIR="~/Xilinx/SDK/2016.4/gnu/arm/lin/bin"
 
 ```
 

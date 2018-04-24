@@ -71,7 +71,8 @@ void TaskDlg::task_loop1()
 //	printf("[DLG] Time %.3f: ddr %lu, ransac %lu, dlg %lu\n", ::GetTime(),
 //			GetTaskReadDDR()->get_task_tic(), GetTaskRansac()->get_task_tic(), get_task_tic());
 
-	fprintf(_p_flog, "%6.3f %lu %lu %lu\n", ::GetTime(), GetTaskReadDDR()->get_task_tic(),
-			GetTaskRansac()->get_task_tic(), get_task_tic());
+	fprintf(_p_flog, "%6.3f %lu %lu %lu %.3f %.3f %.3f\n", ::GetTime(), GetTaskReadDDR()->get_task_tic(),
+			GetTaskRansac()->get_task_tic(), get_task_tic(),
+			GetTaskRansac()->get_pose().val[0][3], GetTaskRansac()->get_pose().val[1][3], GetTaskRansac()->get_pose().val[2][3]);
 }
 

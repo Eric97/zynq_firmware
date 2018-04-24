@@ -1,5 +1,3 @@
-#pragma once
-
 #include "p_match.h"
 #include "matrix.h"
 #include <vector>
@@ -12,12 +10,20 @@ using namespace std;
 vector<int32_t> getRandomSample(int32_t N, int32_t num);
 
 PoseCompute::PoseCompute(Parameters _param)
-	:param(_param)
+	:param(_param),
+	 _rt_valid(false),
+	 X(nullptr),
+	 Y(nullptr),
+	 Z(nullptr),
+	 J(nullptr),
+	 p_predict(nullptr),
+	 p_observe(nullptr),
+	 p_residual(nullptr)
 {
-
+	_rt_delta = Matrix::eye(4);
 }
 
-vector<double> PoseCompute::estimationMotion(vector<p_match> p_matched)
+bool PoseCompute::estimationMotion(vector<p_match> p_matched)
 {
 	// return value
 	bool success = true;
@@ -33,7 +39,7 @@ vector<double> PoseCompute::estimationMotion(vector<p_match> p_matched)
 	// get number of matches
 	int32_t N = p_matched.size();
 	if (N<6)
-		return vector<double>();
+		return false;
 
 	// allocate dynamic memory
 	X = new double[N];
@@ -127,8 +133,20 @@ vector<double> PoseCompute::estimationMotion(vector<p_match> p_matched)
 	delete[] p_residual;
 
 	// parameter estimate succeeded?
-	if (success) return tr_delta;
-	else         return vector<double>();
+	if (success) {
+//		return tr_delta;
+		for (int i = 0; i < 6; i++) {
+			std::cout << tr_delta[i] << std::endl;
+		}
+
+		_rt_delta = transformationVectorToMatrix(tr_delta);
+		_rt_valid = true;
+		return true;
+	}
+	else {
+		_rt_valid = false;
+		return false;
+	}
 
 }
 
@@ -302,6 +320,33 @@ vector<int32_t> PoseCompute::getInlier(vector<p_match> &p_matched, vector<double
 			pow(p_observe[4 * i + 2] - p_predict[4 * i + 2], 2) + pow(p_observe[4 * i + 3] - p_predict[4 * i + 3], 2) < param.inlier_threshold*param.inlier_threshold)
 			inliers.push_back(i);
 	return inliers;
+}
+
+Matrix PoseCompute::transformationVectorToMatrix (vector<double> tr) {
+
+  // extract parameters
+  double rx = tr[0];
+  double ry = tr[1];
+  double rz = tr[2];
+  double tx = tr[3];
+  double ty = tr[4];
+  double tz = tr[5];
+
+  // precompute sine/cosine
+  double sx = sin(rx);
+  double cx = cos(rx);
+  double sy = sin(ry);
+  double cy = cos(ry);
+  double sz = sin(rz);
+  double cz = cos(rz);
+
+  // compute transformation
+  Matrix Tr(4,4);
+  Tr.val[0][0] = +cy*cz;          Tr.val[0][1] = -cy*sz;          Tr.val[0][2] = +sy;    Tr.val[0][3] = tx;
+  Tr.val[1][0] = +sx*sy*cz+cx*sz; Tr.val[1][1] = -sx*sy*sz+cx*cz; Tr.val[1][2] = -sx*cy; Tr.val[1][3] = ty;
+  Tr.val[2][0] = -cx*sy*cz+sx*sz; Tr.val[2][1] = +cx*sy*sz+sx*cz; Tr.val[2][2] = +cx*cy; Tr.val[2][3] = tz;
+  Tr.val[3][0] = 0;               Tr.val[3][1] = 0;               Tr.val[3][2] = 0;      Tr.val[3][3] = 1;
+  return Tr;
 }
 
 vector<int32_t> getRandomSample(int32_t N, int32_t num) {
