@@ -26,6 +26,8 @@ private:
 	std::vector<p_match> _p_matched;		/**< vector to store matched feature points */
 	FILE *_p_match_file;			/**< file pointer to matching points file */
 
+	int _fd_uart;	/**< File descriptor for UART to send pose */
+
 public:
 	Matrix _pose;	/**< Camera pose */
 
@@ -50,12 +52,18 @@ public:
 	 */
 	void task_loop1();
 
+	Matrix get_pose() const { return _pose; }
+
+private:
 	/*
 	 * @brief Print out all feature points in the vector
 	 */
 	void print_feature_points();
 
-	Matrix get_pose() const { return _pose; }
+	/*
+	 * @brief Send pose through UART
+	 */
+	bool send_pose();
 };
 
 #endif /* TASK_RANSAC_H_ */

@@ -8,6 +8,16 @@
 #include <iostream>
 #include <unistd.h>
 
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <termios.h>
+#include <string.h>
+#include <errno.h>
+
 #include "task_ransac.h"
 #include "../comm_fpga/task_readDDR.h"
 #include "matrix.h"
@@ -17,7 +27,8 @@ extern TaskReadDDR	_task_readddr;
 
 TaskRansac::TaskRansac() :
 	_p_pose_compute(nullptr),
-	_p_match_file(nullptr)
+	_p_match_file(nullptr),
+	_fd_uart(-1)
 {
 	_pose = Matrix::eye(4);
 }
@@ -52,6 +63,23 @@ bool TaskRansac::init_task()
 			_p_matched.push_back(p_match(u1p, v1p, 0, u2p, v2p, 0, u1c, v1c, 0, u2c, v2c, 0));
 		}
 	}*/
+
+	// Open serial port and configure
+	_fd_uart = open("/dev/ttyPS1", O_RDWR);
+	if (_fd_uart < 0) {
+		printf("/dev/ttyPS1 open failed.\n");
+		return false;
+	}
+
+	termios term;
+	tcgetattr(_fd_uart, &term);
+
+	cfsetispeed(&term, B115200);
+	cfsetospeed(&term, B115200);
+	term.c_cflag = CS8 | CLOCAL | CREAD;
+
+	tcsetattr(_fd_uart, TCSANOW, &term);
+	tcflush(_fd_uart, TCIOFLUSH);
 
 	printf("[TaskRansac] init done.\n");
 	return true;
@@ -90,7 +118,7 @@ void TaskRansac::task_loop1()
 	}
 
 //	print_feature_points();
-	std::cout << _p_matched.at(175).u1p << " " << _p_matched.at(175).v1p << std::endl;
+//	std::cout << _p_matched.at(175).u1p << " " << _p_matched.at(175).v1p << std::endl;
 
 	if ( _p_pose_compute->estimationMotion(_p_matched) ) {
 		// On success, update current pose
@@ -115,6 +143,8 @@ void TaskRansac::task_loop1()
 	// Reset feature status register to '0' to start next frame on PL
 	// ...
 
+	// Send pose estimation through UART
+	send_pose();
 }
 
 void TaskRansac::print_feature_points()
@@ -125,3 +155,16 @@ void TaskRansac::print_feature_points()
 				(double)it->u1c, (double)it->v1c, (double)it->u2c, (double)it->v2c);
 	}
 }
+
+bool TaskRansac::send_pose()
+{
+	float pose[3] = {(float)_pose.val[0][3], (float)_pose.val[1][3], (float)_pose.val[2][3]};
+	int nWrite = write(_fd_uart, pose, sizeof(pose));
+	if (nWrite < 0) {
+		printf("Write pose failed %s\n", strerror(errno));
+	} else {
+		printf("Write pose %d bytes.\n", nWrite);
+	}
+	return true;
+}
+
