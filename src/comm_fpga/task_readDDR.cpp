@@ -128,12 +128,7 @@ bool TaskReadDDR::read_from_ddr()
 	// Read into feature points
 //	memcpy(&_feature_pnts_ddr[0], _mapped_base, sizeof(FEATURE_POINT) * _feature_num);
 	memcpy(&_feature_pnts_arry[0], _mapped_base, sizeof(FEATURE_POINT) * _feature_num);
-	printf("Read %d feature points\n", _feature_num);
-
-
-//	for (std::vector<FEATURE_POINT>::iterator it = _feature_pnts_ddr.begin(); it != _feature_pnts_ddr.end(); it++) {
-//			printf("%d %d %d %d %d %d %d %d \n", it->x1, it->y1, it->x2, it->y2, it->x3, it->y3, it->x4, it->y4);
-//	}
+//	printf("Read %d feature points\n", _feature_num);
 
 	return true;
 }

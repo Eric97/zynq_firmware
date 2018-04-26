@@ -136,7 +136,7 @@ bool PoseCompute::estimationMotion(vector<p_match> p_matched)
 	if (success) {
 //		return tr_delta;
 		for (int i = 0; i < 6; i++) {
-			std::cout << tr_delta[i] << std::endl;
+//			std::cout << tr_delta[i] << std::endl;
 		}
 
 		_rt_delta = transformationVectorToMatrix(tr_delta);

@@ -33,19 +33,19 @@ unsigned long int _tic0 = 0;
 void main_loop(int num)
 {
 	_task_cam.send_activatepulse_wait_signal(INTERVAL_CAM);
-	printf("[Task CAM] complete.\n");
+//	printf("[Task CAM] complete.\n");
 
 	_task_readddr.send_activatepulse_wait_signal(INTERVAL_DDR);
-	printf("[Task DDR] complete.\n");
+//	printf("[Task DDR] complete.\n");
 
 	_task_ransac.send_activatepulse_wait_signal(INTERVAL_RANSAC);
-	printf("[Task Ransac] complete.\n");
+//	printf("[Task Ransac] complete.\n");
 
 	_task_dlg.send_activatepulse_wait_signal(INVERVAL_DLG);
-	printf("[Task Dlg] complete.\n");
+//	printf("[Task Dlg] complete.\n");
 
 	main_loop_cnt++;
-	printf("[main] %d: time %.3f \n", main_loop_cnt, ::GetTime());
+//	printf("[main] %d: time %.3f \n", main_loop_cnt, ::GetTime());
 }
 
 int main(int argc, char *argv[])

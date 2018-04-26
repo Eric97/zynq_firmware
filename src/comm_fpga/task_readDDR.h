@@ -15,16 +15,16 @@
 #define FEATURE_POINTS_REG	"/dev/feature_points_reg"
 
 struct FEATURE_POINT {
-	int32_t x1,y1;
-	int32_t x2,y2;
-	int32_t x3,y3;
-	int32_t x4,y4;
+	int16_t x1,y1;
+	int16_t x2,y2;
+	int16_t x3,y3;
+	int16_t x4,y4;
 
 	FEATURE_POINT() {}
-	FEATURE_POINT(int32_t x1, int32_t y1, int32_t x2, int32_t y2,
-			int32_t x3, int32_t y3, int32_t x4, int32_t y4) :
+	FEATURE_POINT(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
+			int16_t x3, int16_t y3, int16_t x4, int16_t y4) :
 			x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), x4(x4), y4(y4) {}
-};	/**< Stereo feature points: 8 4-bytes integers */
+};	/**< Stereo feature points: 8 2-bytes integers */
 
 class TaskReadDDR : public TaskThread {
 public:
@@ -38,7 +38,7 @@ public:
 
 	unsigned int get_feature_num() const { return _feature_num; }
 
-	int *get_features_arry()	{ return &_feature_pnts_arry[0]; }
+	int16_t *get_features_arry()	{ return &_feature_pnts_arry[0]; }
 
 	/**
 	 * @brief Get the referenct to the feature points vector
@@ -63,7 +63,7 @@ private:
 	std::vector<FEATURE_POINT> _feature_pnts;		/**< Feature points read from local file */
 	std::vector<FEATURE_POINT> _feature_pnts_ddr;	/**< Feature points read from DDR */
 
-	int _feature_pnts_arry[2048];	/** Allocate maximum of 256 * 8 feature points array */
+	int16_t _feature_pnts_arry[2048];	/** Allocate maximum of 256 * 8 feature points array */
 //	pthread_mutex_t	_mtx_feature;	/**< Mutex for feature points */
 
 	int _fd_mem;	/**< File descriptor of shared memory */

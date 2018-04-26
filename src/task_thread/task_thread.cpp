@@ -89,8 +89,8 @@ void TaskThread::task_loop()
 			_task_tic = _tic2 - _tic1;
 			send_signal(SIGNAL_COMPLETE);
 
-			printf("[TASK] id %lu, tic1 %lu, tic2 %lu, tic %lu\n", (unsigned long int)_thread_id,
-					_tic1, _tic2, _task_tic);
+//			printf("[TASK] id %lu, tic1 %lu, tic2 %lu, tic %lu\n", (unsigned long int)_thread_id,
+//					_tic1, _tic2, _task_tic);
 		}
 	}
 
@@ -179,6 +179,6 @@ void TaskThread::wait_signal(int signal, int us)
 	pthread_mutex_unlock(&_mtx_signal);
 
 	if (wait == ETIMEDOUT) {
-		printf("Timeout on task %lu.\n", (unsigned long int)this->_thread_id);
+//		printf("Timeout on task %lu.\n", (unsigned long int)this->_thread_id);
 	}
 }

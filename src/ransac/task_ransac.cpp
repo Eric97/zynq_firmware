@@ -42,10 +42,10 @@ bool TaskRansac::init_task()
 	Parameters param;
 
 	// calibration parameters for sequence 2010_03_09_drive_0019
-	param.calib.f = 645.24; // focal length in pixels
-	param.calib.cu = 635.96; // principal point (u-coordinate) in pixels
-	param.calib.cv = 194.13; // principal point (v-coordinate) in pixels
-	param.base = 0.5707; // baseline in meters
+	param.calib.f = 923.30; // focal length in pixels
+	param.calib.cu = 227.57; // principal point (u-coordinate) in pixels
+	param.calib.cv = 178.93; // principal point (v-coordinate) in pixels
+	param.base = 0.15; // baseline in meters
 
 	_p_pose_compute = new PoseCompute(param);
 
@@ -65,7 +65,7 @@ bool TaskRansac::init_task()
 	}*/
 
 	// Open serial port and configure
-	_fd_uart = open("/dev/ttyPS1", O_RDWR);
+/*	_fd_uart = open("/dev/ttyPS1", O_RDWR);
 	if (_fd_uart < 0) {
 		printf("/dev/ttyPS1 open failed.\n");
 		return false;
@@ -79,7 +79,7 @@ bool TaskRansac::init_task()
 	term.c_cflag = CS8 | CLOCAL | CREAD;
 
 	tcsetattr(_fd_uart, TCSANOW, &term);
-	tcflush(_fd_uart, TCIOFLUSH);
+	tcflush(_fd_uart, TCIOFLUSH);*/
 
 	printf("[TaskRansac] init done.\n");
 	return true;
@@ -107,7 +107,7 @@ void TaskRansac::task_loop1()
 	unsigned int num_feature = _task_readddr.get_feature_num();
 	if (num_feature == 0) return;
 
-	int *ptr_feature = _task_readddr.get_features_arry();
+	int16_t *ptr_feature = _task_readddr.get_features_arry();
 
 	for (unsigned int i = 0; i < num_feature; i++) {
 		_p_matched.push_back(p_match((float)(*ptr_feature), (float)(*(ptr_feature+1)), 0,
@@ -117,19 +117,17 @@ void TaskRansac::task_loop1()
 		ptr_feature += 8;
 	}
 
-//	print_feature_points();
+	print_feature_points();
 //	std::cout << _p_matched.at(175).u1p << " " << _p_matched.at(175).v1p << std::endl;
 
 	if ( _p_pose_compute->estimationMotion(_p_matched) ) {
 		// On success, update current pose
 		_pose = _pose * Matrix::inv(_p_pose_compute->getMotion());
-		std::cout << "Current frame pose " << std::endl;
-//		std::cout << _pose.val[0][0] << std::endl;
-		printf("%.3f %.3f %.3f %.3f\n", _pose.val[0][0], _pose.val[0][1], _pose.val[0][2], _pose.val[0][3]);
-		printf("%.3f %.3f %.3f %.3f\n", _pose.val[1][0], _pose.val[1][1], _pose.val[1][2], _pose.val[1][3]);
-		printf("%.3f %.3f %.3f %.3f\n", _pose.val[2][0], _pose.val[2][1], _pose.val[2][2], _pose.val[2][3]);
-		printf("%.3f %.3f %.3f %.3f\n", _pose.val[3][0], _pose.val[3][1], _pose.val[3][2], _pose.val[3][3]);
-		printf("\n");
+//		printf("%.3f %.3f %.3f %.3f\n", _pose.val[0][0], _pose.val[0][1], _pose.val[0][2], _pose.val[0][3]);
+//		printf("%.3f %.3f %.3f %.3f\n", _pose.val[1][0], _pose.val[1][1], _pose.val[1][2], _pose.val[1][3]);
+//		printf("%.3f %.3f %.3f %.3f\n", _pose.val[2][0], _pose.val[2][1], _pose.val[2][2], _pose.val[2][3]);
+//		printf("%.3f %.3f %.3f %.3f\n", _pose.val[3][0], _pose.val[3][1], _pose.val[3][2], _pose.val[3][3]);
+		printf("%.3f %.3f %.3f\n", _pose.val[0][3], _pose.val[1][3], _pose.val[2][3]);
 	} else {
 		printf("Motion estimation failed...\n");
 	}
@@ -161,9 +159,9 @@ bool TaskRansac::send_pose()
 	float pose[3] = {(float)_pose.val[0][3], (float)_pose.val[1][3], (float)_pose.val[2][3]};
 	int nWrite = write(_fd_uart, pose, sizeof(pose));
 	if (nWrite < 0) {
-		printf("Write pose failed %s\n", strerror(errno));
+//		printf("Write pose failed %s\n", strerror(errno));
 	} else {
-		printf("Write pose %d bytes.\n", nWrite);
+//		printf("Write pose %d bytes.\n", nWrite);
 	}
 	return true;
 }
