@@ -50,8 +50,15 @@ public:
 	 */
 	void clear_ddr() { _feature_pnts_ddr.clear(); }
 
+	/*
+	 * @brief Clear the status register after reading
+	 */
+	void clear_status_reg();
+
+	int get_feature_status() const { return _feature_status; }
+
 private:
-	static constexpr int32_t FEATURE_POINTS_DDR_ADDR = 0x1F400000;
+	static constexpr int32_t FEATURE_POINTS_DDR_ADDR = 0x20000000; // 0x1F400000;
 	static constexpr int32_t MAP_SIZE = 256 * 8 * 4;	/**< Maximum 256 feature points */
 	static constexpr int32_t MAP_MASK = MAP_SIZE - 1;
 	static constexpr int	FEATURE_STATUS_READY = 1;
@@ -68,6 +75,7 @@ private:
 
 	int _fd_mem;	/**< File descriptor of shared memory */
 	int _fd_fp_reg;	/**< File descriptor of feature points register device */
+	int _feature_status;	/**< Feature status: 0 - Not ready; 1 - Ready */
 	unsigned int _feature_num;	/**< Number of feature points stored in DDR */
 
 	/*
@@ -85,7 +93,10 @@ private:
 	 */
 	bool read_from_ddr();
 
-
+	/**
+	 * @brief Read feature poinst from BRAM
+	 */
+	bool read_from_bram();
 
 	/**
 	 * @brief Write feature points to DDR

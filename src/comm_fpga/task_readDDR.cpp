@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <errno.h>
 
 #include "task_readDDR.h"
 
@@ -24,6 +25,7 @@ TaskReadDDR::TaskReadDDR() :
 	_feature_pnts_arry{},
 	_fd_mem(-1),
 	_fd_fp_reg(-1),
+	_feature_status(0),
 	_feature_num(0)
 {
 
@@ -68,8 +70,9 @@ bool TaskReadDDR::exit_task()
 
 void TaskReadDDR::task_loop1()
 {
-//	return;
 	read_from_ddr();
+
+	// read_from_bram();
 }
 
 bool TaskReadDDR::init_fp_reg()
@@ -115,8 +118,11 @@ bool TaskReadDDR::read_from_ddr()
 
 	int status = *(int *)readBuf;
 	if (status != FEATURE_STATUS_READY) {
+		_feature_status = 0;
 		printf("Feature status not ready.\n");
 		return false;
+	} else {
+		_feature_status = 1;
 	}
 
 	_feature_num = *(unsigned int *)(readBuf + 4);
@@ -132,6 +138,45 @@ bool TaskReadDDR::read_from_ddr()
 
 	return true;
 }
+
+bool TaskReadDDR::read_from_bram()
+{
+	// Read feature status register from PL
+	char readBuf[8] = {0};
+	int nread = read(_fd_fp_reg, readBuf, sizeof(int) * 2);	// Read 2 regs: status reg and number reg
+	if (nread < 0) {
+		printf("Read from feature register failed\n");
+		return false;
+	}
+
+	int status = *(int *)readBuf;
+	if (status != FEATURE_STATUS_READY) {
+		_feature_status = 0;
+		printf("Feature status not ready.\n");
+		return false;
+	} else {
+		_feature_status = 1;
+	}
+
+	_feature_num = *(unsigned int *)(readBuf + 4);
+	// Read feature number register from PL
+	_feature_pnts_ddr.clear();
+	_feature_pnts_ddr.resize(_feature_num);
+
+	char feature_buf[1032] = {0};
+	// Read: reg_status | reg_feature_num | feature1(x1,y1,x2,y2,x3,y3,x4,y4) | feature2 | ...
+	nread = read(_fd_fp_reg, feature_buf, sizeof(FEATURE_POINT) * _feature_num + sizeof(int) * 2);
+	if (nread < 0) {
+		printf("Read feature points from BRAM failed %s\n", strerror(errno));
+		return false;
+	}
+
+	// Copy into the feature points
+	memcpy(&_feature_pnts_arry[0], feature_buf + 8, sizeof(FEATURE_POINT) * _feature_num);
+
+	return true;
+}
+
 
 bool TaskReadDDR::write_to_ddr()
 {
@@ -161,4 +206,14 @@ bool TaskReadDDR::read_from_file(char *filename)
 	}
 
 	return true;
+}
+
+void TaskReadDDR::clear_status_reg()
+{
+	int status_clear = 0;
+	int nWrite = write(_fd_fp_reg, &status_clear, sizeof(int));
+	if (nWrite < 0) {
+		printf("Write to status register failed %s.\n", strerror(errno));
+		return;
+	}
 }

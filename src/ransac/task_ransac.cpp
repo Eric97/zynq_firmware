@@ -104,8 +104,8 @@ bool TaskRansac::exit_task()
 void TaskRansac::task_loop1()
 {
 	// Get the feature points from DDR
+	if ( _task_readddr.get_feature_status() == 0) return;
 	unsigned int num_feature = _task_readddr.get_feature_num();
-	if (num_feature == 0) return;
 
 	int16_t *ptr_feature = _task_readddr.get_features_arry();
 
@@ -117,7 +117,6 @@ void TaskRansac::task_loop1()
 		ptr_feature += 8;
 	}
 
-	print_feature_points();
 //	std::cout << _p_matched.at(175).u1p << " " << _p_matched.at(175).v1p << std::endl;
 
 	if ( _p_pose_compute->estimationMotion(_p_matched) ) {
@@ -129,6 +128,7 @@ void TaskRansac::task_loop1()
 //		printf("%.3f %.3f %.3f %.3f\n", _pose.val[3][0], _pose.val[3][1], _pose.val[3][2], _pose.val[3][3]);
 		printf("%.3f %.3f %.3f\n", _pose.val[0][3], _pose.val[1][3], _pose.val[2][3]);
 	} else {
+		print_feature_points();
 		printf("Motion estimation failed...\n");
 	}
 
@@ -139,10 +139,10 @@ void TaskRansac::task_loop1()
 	_p_matched.clear();
 
 	// Reset feature status register to '0' to start next frame on PL
-	// ...
+	_task_readddr.clear_status_reg();
 
 	// Send pose estimation through UART
-	send_pose();
+//	send_pose();
 }
 
 void TaskRansac::print_feature_points()
